@@ -1,0 +1,126 @@
+Ejecicios del tutorial: "**A tutorial on Principal Components Analysis**".
+
+Author:
+Lindsay I Smith
+(Department of Computer Science, University of Otago, New Zealand).
+https://ourarchive.otago.ac.nz/bitstream/handle/10523/7534/OUCS-2002-12.pdf?sequence=1&isAllowed=y&fbclid=IwAR16VquRIdT35IpKi1AKNWih6Tn6b5IO1iMEG5EzAP9BdrX15lXdztRiVrc
+"""
+
+# Commented out IPython magic to ensure Python compatibility.
+import pandas as pd
+from numpy import linalg as LA 
+import numpy as np
+import matplotlib.pyplot as plt
+# %matplotlib inline
+
+"""```
+# Esto tiene formato de código
+```
+
+Step 1. El dataset de ejemplo
+"""
+
+d = {'x': [2.5, 0.5, 2.2, 1.9, 3.1, 2.3, 2, 1, 1.5, 1.1], 'y': [2.4, 0.7, 2.9, 2.2, 3.0, 2.7,1.5, 1.1, 1.6, 0.9 ]}
+
+df = pd.DataFrame(data=d)
+
+"""Lo pongo lindo en dataframe de Pandas"""
+
+df
+
+df['x'].size
+
+mean = df.mean(axis=0)
+type(mean)
+
+type(df['x'][0])
+
+"""Step 2. Calculo la media en cada dimension y la resto"""
+
+mean_x = df['x'] - mean[0]
+
+mean_y = df['y'] - mean[1]
+
+mean_pythonic = df - df.mean() # Al final lo termine haciendo de esta manera porque era más fácil y "pythonico" jaja
+
+"""Step 3. Calculo la matriz de covarianza"""
+
+cov_matrix = mean_pythonic.cov()
+
+"""Step 4. Calculo autovectores y autovalores de la matriz de covarianza"""
+
+w, v = LA.eig(cov_matrix)
+#The result are the unit eigenvectors V and the eigenvalues W
+
+eigenvalues = w
+
+eigenvectors = v
+
+"""Grafico de los datos normalizados"""
+
+df.plot(kind='scatter',x='x',y='y',color='red')
+plt.show()
+
+eigenvalues
+
+eigenvectors
+
+
+
+"""Step 5. Choosing components and forming a feature vector
+
+Debido a que tenemos dos autovectores, tenemos dos opciones:
+1. Nos quedamos con los dos.
+2. Nos quedamos o solo con el más grande.
+
+Step 6. Deriving the new data set (en el tuto es el step 5. supongo que está mal)
+
+Una vez que elegimos los componentes (autovectores) tenemos que "volver para atrás" (No estoy seguro de que sea correcto decirlo así), tomando la traspuesta del vector y multiplicando por el data set original:
+
+
+FinalData = RowFeatureVector x RowDataAdjust
+
+Donde,
+
+RowFeatureVector = Es la matriz con los autovectores en la columna transpuesta (los autovectores ahora están en la fila en lugar de la columna).
+
+RowDataAdjust = Es la data normalizada y transpuesta 
+
+Los datos solían estar en términos de X e Y y ahora están en términos de los autovectores que decidamos quedarnos.
+"""
+
+Row_feature_vector = eigenvectors.T
+
+RowDataAdjust = mean_pythonic.values.T
+
+FinalData = np.dot(Row_feature_vector,RowDataAdjust)
+FinalData[0]
+
+dictio = {'x': FinalData[1] , 'y': FinalData[0]  }
+# Solo un autovector
+dictio_only_x = {'x': FinalData[1], 'y': FinalData[1]}
+Final_DataFrame_only_x = pd.DataFrame(data=dictio_only_x)
+
+
+
+# Solo el otro autovector
+dictio_only_y = {'x': FinalData[0], 'y': FinalData[0]}
+Final_DataFrame_only_y = pd.DataFrame(data=dictio_only_y)
+
+Final_DataFrame = pd.DataFrame(data=dictio)
+
+"""Ploteo con los dos componentes"""
+
+Final_DataFrame.plot(kind='scatter',x='x',y='y',color='red')
+plt.show()
+
+"""Ploteo con el componente principal"""
+
+Final_DataFrame_only_x.plot(kind='scatter',x='x',y='y',color='red')
+plt.show()
+
+"""Comparo con el grafico original"""
+
+df.plot(kind='scatter',x='x',y='y',color='red')
+plt.show()
+
